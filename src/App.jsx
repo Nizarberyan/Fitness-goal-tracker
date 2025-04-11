@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import React, { useState, useEffect } from 'react';
+import GoalForm from './components/GoalForm';
+import GoalList from './components/GoalList';
+import GoalSummary from './components/GoalSummary';
+import { saveGoals, loadGoals } from './utils/storage';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [goals, setGoals] = useState([]);
+
+  // Load saved goals from localStorage on first render
+  useEffect(() => {
+    const saved = loadGoals();
+    setGoals(saved);
+  }, []);
+
+  // Save to localStorage every time goals change
+  useEffect(() => {
+    saveGoals(goals);
+  }, [goals]);
+
+  // Add a new goal
+  const addGoal = (goal) => {
+    setGoals([...goals, goal]);
+  };
+
+  // Increase progress of a goal
+  const updateProgress = (id) => {
+    const updated = goals.map(goal =>
+      goal.id === id ? { ...goal, progress: goal.progress + 1 } : goal
+    );
+    setGoals(updated);
+  };
+
+  // Delete a goal
+  const deleteGoal = (id) => {
+    const updated = goals.filter(goal => goal.id !== id);
+    setGoals(updated);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="App">
+      <h1>Fitness Goal Tracker</h1>
+      <GoalForm onAdd={addGoal} />
+      <GoalList goals={goals} onProgress={updateProgress} onDelete={deleteGoal} />
+      <GoalSummary goals={goals} />
+    </div>
+  );
 }
 
-export default App
+export default App;
